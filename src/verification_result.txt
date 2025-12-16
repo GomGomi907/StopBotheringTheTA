@@ -1,0 +1,9 @@
+1. Visiting /courses...
+   Found relevant courses: ['과목 메뉴에서 제거하려면 클릭하십시오.\n\tSW프로페셔널영어쓰기 2분반\t\t2025년 2학기\t학생\t공개\n이 과목은 공개되었습니다.']
+
+2. Visiting Course 83491 Files (External Tool 1)...
+   [x] File NOT found in Files tab text.
+   [Confirm] 'No lecture materials' message detected.
+
+3. Visiting Course 83491 Weekly Learning (External Tool 218)...
+   [!] Item FOUND in Weekly Learning iframe: https://canvas.dankook.ac.kr/learningx/lti/modulebuilder

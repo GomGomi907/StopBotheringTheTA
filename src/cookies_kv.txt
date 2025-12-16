@@ -1,0 +1,182 @@
+[
+  {
+    "name": "PHPSESSID",
+    "value": "ht80o1tb8tn2rbnh5kg9epuriu",
+    "domain": "nlms.dankook.ac.kr",
+    "path": "/",
+    "expires": -1,
+    "httpOnly": false,
+    "secure": false,
+    "sameSite": "Lax"
+  },
+  {
+    "name": "JSESSIONID",
+    "value": "91cc26cf3ae34c9a84cffadd6c20ff744bfcbb4a816cbebc9171!-2016109863",
+    "domain": "logon.dankook.ac.kr",
+    "path": "/",
+    "expires": -1,
+    "httpOnly": true,
+    "secure": false,
+    "sameSite": "Lax"
+  },
+  {
+    "name": "SSO_ROUTEID",
+    "value": ".SSO21",
+    "domain": "logon.dankook.ac.kr",
+    "path": "/",
+    "expires": -1,
+    "httpOnly": false,
+    "secure": false,
+    "sameSite": "Lax"
+  },
+  {
+    "name": "WMONID",
+    "value": "M4Qn2i1JhoP",
+    "domain": "portal.dankook.ac.kr",
+    "path": "/",
+    "expires": 1796789142.749755,
+    "httpOnly": false,
+    "secure": false,
+    "sameSite": "Lax"
+  },
+  {
+    "name": "_xm_webid_1_",
+    "value": "-113939374",
+    "domain": "portal.dankook.ac.kr",
+    "path": "/",
+    "expires": 1772996742.749923,
+    "httpOnly": false,
+    "secure": false,
+    "sameSite": "Lax"
+  },
+  {
+    "name": "PTL_ROUTEID",
+    "value": ".WAS11_PTL",
+    "domain": "portal.dankook.ac.kr",
+    "path": "/",
+    "expires": -1,
+    "httpOnly": false,
+    "secure": false,
+    "sameSite": "Lax"
+  },
+  {
+    "name": "PTL_JSESSIONID",
+    "value": "43b3f609bc5c4968abc58a279a9bd18946ea95370da29676f4a5!1799833528",
+    "domain": "portal.dankook.ac.kr",
+    "path": "/",
+    "expires": -1,
+    "httpOnly": true,
+    "secure": false,
+    "sameSite": "Lax"
+  },
+  {
+    "name": "_SSO_Global_Logout_url",
+    "value": "get%5Ehttps%3A%2F%2Fportal.dankook.ac.kr%2Fsso%2Flogout.jsp%3Flogout%3D1%24get%5Ehttps%3A%2F%2Fnlms.dankook.ac.kr%2Fsso%2Flogout.php%24",
+    "domain": ".dankook.ac.kr",
+    "path": "/",
+    "expires": -1,
+    "httpOnly": false,
+    "secure": false,
+    "sameSite": "Lax"
+  },
+  {
+    "name": "kalogin",
+    "value": "MEJW0nbu+7UsPQ==$dankook.ac.kr",
+    "domain": ".dankook.ac.kr",
+    "path": "/",
+    "expires": 1765224343.054844,
+    "httpOnly": false,
+    "secure": false,
+    "sameSite": "Lax"
+  },
+  {
+    "name": "xn_api_token",
+    "value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2xvZ2luIjoiMzIxODMwMjIiLCJyb2xlIjpudWxsLCJjcmVhdGVkX2F0IjoxNzY1MjIwNzQzLCJpYXQiOjE3NjUyMjA3NDN9.dqdNHa0jf7ml5pE-cykOJJwJmMvZ8ihyDg_PuqgJdNc",
+    "domain": "canvas.dankook.ac.kr",
+    "path": "/",
+    "expires": -1,
+    "httpOnly": false,
+    "secure": false,
+    "sameSite": "Lax"
+  },
+  {
+    "name": "XSRF-TOKEN",
+    "value": "eyJpdiI6IlpzVnlIbHZCQ2g0RUlwMHc5RjBUZUE9PSIsInZhbHVlIjoiRU4rWmsrbHB0SVpCXC8rNkk0U0hTMGNMM0VUSzlrNExKRHZudEFjbStPQTJteHZZa21xbU5FNVIzK1pjTXJ0MVUiLCJtYWMiOiI2MjlhMDNlY2Q2NDA0NDViZmJkOWNjODMyYzkyZTRiYzkxMDNiOGM1MmE4MmY2NGM1Yzc1ZmRkOTRhYjBmN2JiIn0%3D",
+    "domain": "canvas.dankook.ac.kr",
+    "path": "/",
+    "expires": 1765227943.208094,
+    "httpOnly": false,
+    "secure": false,
+    "sameSite": "Lax"
+  },
+  {
+    "name": "laravel_session",
+    "value": "eyJpdiI6IkYrMng2eFhSM25IZDBRalg5VThGT0E9PSIsInZhbHVlIjoiY2ZoOWhYaE5vc0J5TlUxRk1rNE1Ud2dOYTJQK3kxKzdrelZIc2ZySWY4eCtpK3M0cndkaTA5WnlXOWdERVwvaDQiLCJtYWMiOiIxMWJjNDk5NDVlMjM5YmUwNDViMWUyMjZkNWVkNDRiNGUxZGVjNzhmZWIyMGRkNGViNDNkODViZTdkMjA3N2QzIn0%3D",
+    "domain": "canvas.dankook.ac.kr",
+    "path": "/",
+    "expires": -1,
+    "httpOnly": true,
+    "secure": false,
+    "sameSite": "Lax"
+  },
+  {
+    "name": "log_session_id",
+    "value": "5ba27c731a488a9f48eb9afcf9e87083",
+    "domain": "canvas.dankook.ac.kr",
+    "path": "/",
+    "expires": -1,
+    "httpOnly": true,
+    "secure": true,
+    "sameSite": "Lax"
+  },
+  {
+    "name": "_legacy_normandy_session",
+    "value": "AouNP32CrF07MLtjAxlyzQ+78htjjrXnrzpoqyfa8TwFSVGB5caFjRgoK5MbprEh_9ESqCpXehZjwyWeqSPUGR0cyXaWUf3nLcgiSNUYTK1VKGQ-dKOJbJ7G2pE0KwVauumIf5CxpheWRrl-IeqlZm0LCx2MJUFvrUBJkVtfZKaX_gLmTI5tdRqNDfY4hW1fC1uS7tpOI0_Gejv9QFm6cYSsKQjJ9Bjkq7YO_ihn_sWhFBu0fIL-JkxVGj6dnHx2EiCkGhWr-cW1LcLcScGec5HrRvvCNjk9YeA6aoT3v5DKJ0kwSthEhwu4QBmhTY2OJ01dzf6XFEWVhCPleRsxbZMJQq1iGyeuT1h1P_E5jNWR_e9xtwItLfrwhcZOV9WxZ4.NAkrb4MgFVauD1xTGtEeR1frGh8.aTchiA",
+    "domain": "canvas.dankook.ac.kr",
+    "path": "/",
+    "expires": -1,
+    "httpOnly": true,
+    "secure": true,
+    "sameSite": "Lax"
+  },
+  {
+    "name": "_normandy_session",
+    "value": "AouNP32CrF07MLtjAxlyzQ+78htjjrXnrzpoqyfa8TwFSVGB5caFjRgoK5MbprEh_9ESqCpXehZjwyWeqSPUGR0cyXaWUf3nLcgiSNUYTK1VKGQ-dKOJbJ7G2pE0KwVauumIf5CxpheWRrl-IeqlZm0LCx2MJUFvrUBJkVtfZKaX_gLmTI5tdRqNDfY4hW1fC1uS7tpOI0_Gejv9QFm6cYSsKQjJ9Bjkq7YO_ihn_sWhFBu0fIL-JkxVGj6dnHx2EiCkGhWr-cW1LcLcScGec5HrRvvCNjk9YeA6aoT3v5DKJ0kwSthEhwu4QBmhTY2OJ01dzf6XFEWVhCPleRsxbZMJQq1iGyeuT1h1P_E5jNWR_e9xtwItLfrwhcZOV9WxZ4.NAkrb4MgFVauD1xTGtEeR1frGh8.aTchiA",
+    "domain": "canvas.dankook.ac.kr",
+    "path": "/",
+    "expires": -1,
+    "httpOnly": true,
+    "secure": true,
+    "sameSite": "None"
+  },
+  {
+    "name": "_csrf_token",
+    "value": "WB%2BSGEYlHVuZniY6CBBlZ2xJHjibco6tDSUKQ81WVIwidMZydmNEGMz4cG5vejcvLxAqf85CwMBJSEAAujcm3A%3D%3D",
+    "domain": "canvas.dankook.ac.kr",
+    "path": "/",
+    "expires": -1,
+    "httpOnly": false,
+    "secure": true,
+    "sameSite": "Lax"
+  },
+  {
+    "name": "_ga_GCRSB20VT0",
+    "value": "GS2.1.s1765220744$o1$g0$t1765220744$j60$l0$h0",
+    "domain": ".dankook.ac.kr",
+    "path": "/",
+    "expires": 1799780744.379007,
+    "httpOnly": false,
+    "secure": false,
+    "sameSite": "Lax"
+  },
+  {
+    "name": "_ga",
+    "value": "GA1.1.401122959.1765220744",
+    "domain": ".dankook.ac.kr",
+    "path": "/",
+    "expires": 1799780744.379789,
+    "httpOnly": false,
+    "secure": false,
+    "sameSite": "Lax"
+  }
+]

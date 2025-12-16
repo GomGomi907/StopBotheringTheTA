@@ -1,0 +1,55 @@
+=== Page Analysis: https://canvas.dankook.ac.kr/courses/83491/modules/items/4395011 ===
+
+Title: SW Professional Writing Week 3 Activity Sheet
+
+Final URL: https://canvas.dankook.ac.kr/courses/83491/modules/items/4395011
+
+
+--- Main Frame Content Sample (First 2000 chars) ---
+
+<!DOCTYPE html><html class="" dir="ltr" lang="ko"><head>
+  <meta charset="utf-8">
+  <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="">
+    <link rel="stylesheet" media="screen" href="/dist/brandable_css/no_variables/bundles/lato_extended-38dc7d1774.css">
+  <link href="https://fonts.googleapis.com/css2?family=Architects+Daughter&amp;display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Balsamiq+Sans&amp;display=swap" rel="stylesheet">
+    <script>if (navigator.userAgent.match(/(MSIE|Trident\/)/)) location.replace('/ie-is-not-supported.html')</script>
+  
+  <link rel="shortcut icon" type="image/x-icon" href="https://canvas.dankook.ac.kr/accounts/1/files/25/download?verifier=eNjLuBvUn2MxYWOkjEdFP3BgU0aeiI8s2sGpUS0v">
+  <link rel="apple-touch-icon" href="https://canvas.dankook.ac.kr/accounts/1/files/26/download?verifier=epVzQDSXODiAQYWfH6uLKXqFx1FGZVBn24kud19Q">
+  <link rel="stylesheet" media="all" href="/dist/brandable_css/4476a009c13b37af31bd84857e05aa84/variables-8391c84da435c9cfceea2b2b3317ff66.css">
+  <link rel="stylesheet" media="all" href="/dist/brandable_css/responsive_layout_normal_contrast/bundles/common-08dc185d29.css">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#004898">
+  
+  <link rel="stylesheet" media="all" href="https://canvas.dankook.ac.kr/accounts/1/files/5688764/download?verifier=s8sx4IymfDHoeyfbP8slQjSnuCzNAzgqTlpKEj61">
+  <script>
+    function _earlyClick(e){
+      var c = e.target
+      while (c && c.ownerDocument) {
+        if (c.getAttribute('href') == '#' || c.getAttribute('data-method')) {
+          e.preventDefault()
+          (_earlyClick.clicks = _earlyClick.clicks || []).push(c)
+          break
+        }
+        c = c.parentNode
+      }
+    }
+    document.addEventListener('click', _earlyClick)
+  </script>
+
+
+  <script>
+    INST = {"environment":"production","disableCrocodocPreviews":true,"logPageViews":true,"maxVisibleEdit
+
+--- Frames (3) ---
+
+Frame 0:  | URL: https://canvas.dankook.ac.kr/courses/83491/modules/items/4395011
+
+Frame 1: instructure_ajax_error_result | URL: about:blank
+
+Frame 2: tool_content | URL: https://canvas.dankook.ac.kr/learningx/lti/lecture_attendance/items/view/70530
+
+
+--- JS Variable Search (Main + Frames) ---
