@@ -16,6 +16,11 @@ from src.records.writer import RecordWriter
 logger = logging.getLogger(__name__)
 
 
+class AuthenticationError(Exception):
+    """Canvas 인증 오류 (401/403) - 재로그인 필요"""
+    pass
+
+
 class CanvasCrawler:
     """캔버스 LMS의 5대 핵심 탭(강의계획서, 공지, 주차학습, 게시판, 자료실) 구조를 반영한 크롤러."""
 
@@ -54,10 +59,27 @@ class CanvasCrawler:
         client = self._client()
         courses = self._fetch_courses(client)
         
-        # 필터링
+        # 필터링: 특정 코스 ID
         if course_ids:
             course_ids_set = set(str(x) for x in course_ids)
             courses = [c for c in courses if str(c.get("id")) in course_ids_set]
+        
+        # 학기 필터링: settings의 current_semester에 맞는 과목만
+        target_semester = self.settings.current_semester  # 예: "2025-2", "2025-winter"
+        if target_semester:
+            filtered_courses = []
+            for c in courses:
+                term = c.get("term", {})
+                term_name = term.get("name", "")  # 예: "2025년 2학기", "2025년 동계계절학기"
+                
+                # 학기 매칭 로직
+                if self._match_semester(term_name, target_semester):
+                    filtered_courses.append(c)
+                    logger.info(f"  [O] 포함: {c.get('name', 'N/A')[:25]} | 학기: {term_name}")
+                else:
+                    logger.info(f"  [X] 제외: {c.get('name', 'N/A')[:25]} | 학기: {term_name}")
+            
+            courses = filtered_courses
             
         logger.info(f"총 {len(courses)}개 과목에 대해 구조적 크롤링을 시작합니다.")
 
@@ -68,6 +90,42 @@ class CanvasCrawler:
                 logger.error(f"코스 처리 중 치명적 오류 ({course.get('name')}): {e}")
                 
         return courses
+    
+    def _match_semester(self, term_name: str, target_semester: str) -> bool:
+        """Canvas 학기명과 설정된 학기를 매칭"""
+        # target_semester 형식: "2025-2", "2025-winter", "2025-summer", "2025-1"
+        # term_name 형식: "2025년 2학기", "2025년 동계계절학기", "2025년 1학기" 등
+        
+        if not term_name:
+            return False
+        
+        # 비교과 과목 제외 (정규 학기 아님)
+        exclude_keywords = ["비교과", "영웅스토리", "특강", "교육교재", "외부", "기타"]
+        for kw in exclude_keywords:
+            if kw in term_name:
+                return False
+        
+        parts = target_semester.split("-")
+        if len(parts) != 2:
+            return False
+        
+        year, period = parts[0], parts[1]
+        
+        # 연도 확인
+        if year not in term_name:
+            return False
+        
+        # 학기 유형 매칭
+        if period == "1":
+            return "1학기" in term_name
+        elif period == "2":
+            return "2학기" in term_name
+        elif period == "winter":
+            return "동계" in term_name or "겨울" in term_name
+        elif period == "summer":
+            return "하계" in term_name or "여름" in term_name
+        
+        return False
 
     def _crawl_course_structure(self, client: HttpClient, course: Dict) -> None:
         """한 과목의 5대 탭(계획서, 공지, 모듈, 게시판, 자료실)을 순회하며 수집"""
@@ -334,11 +392,32 @@ class CanvasCrawler:
         return results
 
     def _fetch_courses(self, client: HttpClient) -> List[Dict]:
-        """활성 코스 목록 조회"""
+        """활성 코스 목록 조회 (학기 정보 포함)"""
         try:
-            resp = client.get("/api/v1/courses", params={"enrollment_state": "active", "per_page": 50})
+            # include[]=term 으로 학기(Term) 정보 포함
+            resp = client.get("/api/v1/courses", params={
+                "enrollment_state": "active", 
+                "per_page": 50,
+                "include[]": "term"  # 학기 정보 포함
+            })
+            
+            # 인증 오류 감지
+            if resp.status_code in (401, 403):
+                logger.error(f"인증 오류 (HTTP {resp.status_code}): 재로그인이 필요합니다.")
+                raise AuthenticationError(f"Canvas 인증 실패 (HTTP {resp.status_code})")
+            
             data = self._decode_json(resp)
-            return data if isinstance(data, list) else []
+            
+            if isinstance(data, list):
+                # 학기 정보 로깅
+                for c in data:
+                    term = c.get("term", {})
+                    term_name = term.get("name", "Unknown")
+                    logger.info(f"  과목: {c.get('name', 'N/A')[:30]} | 학기: {term_name}")
+                return data
+            return []
+        except AuthenticationError:
+            raise  # 재발생시켜 상위에서 처리
         except Exception as e:
             logger.error(f"코스 목록 조회 실패: {e}")
             return []

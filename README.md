@@ -51,8 +51,7 @@ d:\학사크롤러\
 │   └── ui\            # Streamlit Views
 ├── data\              # Local DB (Ignored)
 ├── dashboard.py       # Main Entry Point
-└── report.md          # Project Report
+└── dashboard.py       # Main Entry Point
 ```
 
-## 📝 Report
-For full technical details, methodology, and results, please refer to the **[Project Report](report.md)**.
+

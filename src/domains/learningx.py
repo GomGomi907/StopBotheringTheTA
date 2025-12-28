@@ -439,10 +439,10 @@ async def download_learningx_files(
                         content_type = item_content.get("content_type", "").lower()
 
                         if "mp4" in content_type or "video" in content_type:
-                            print(f"  [스킵] 비디오 파일: {item_content.get('title')}")
-                            continue
-
-                        target_download_url = download_url if download_url else view_url
+                            print(f"  [Info] 비디오 파일 발견: {item_content.get('title')} (다운로드 시도 중...)")
+                            target_download_url = download_url if download_url else view_url
+                        else:
+                            target_download_url = download_url if download_url else view_url
 
                         # [Fix] CLMS Viewer URL 처리 (/em/ 패턴)
                         if target_download_url and "/em/" in target_download_url and "clms.dankook.ac.kr" in target_download_url:

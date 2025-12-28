@@ -28,7 +28,9 @@ class Record:
     payload: Any = None  # HTML/JSON 등 원본 데이터
     id: Optional[str] = None
     fetched_at: str = field(default_factory=now_iso)
+    semester: Optional[str] = None  # 학기 식별자 (예: 2025-2)
 
     def to_dict(self) -> Dict[str, Any]:
         data = asdict(self)
         return data
+

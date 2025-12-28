@@ -63,8 +63,10 @@ async def _resolve_generic_download_url(context: BrowserContext, viewer_url: str
         print(f"  [Warn] 일반 파일 링크 추출 실패: {e}")
     return None
 
+import httpx
+
 async def _download_file_logic(context: BrowserContext, course_dir: Path, file_name: str, target_url: str) -> Optional[str]:
-    """공통 파일 다운로드 로직 (HTML 뷰어 리졸브 포함)"""
+    """공통 파일 다운로드 로직 (HTML 뷰어 리졸브 + Stream Download)"""
     try:
         if not target_url: return None
         
@@ -73,38 +75,82 @@ async def _download_file_logic(context: BrowserContext, course_dir: Path, file_n
             real = await _resolve_viewer_pdf(context, target_url)
             if real: target_url = real
 
-        resp = await context.request.get(target_url)
-        if resp.status != 200: return None
+        # Playwright Request for Header Check
+        # (We use Playwright first to check redirects and HTML content-type easily using existing session)
+        # But for video/large files, we want to perform the actual download via httpx stream.
+        # However, Playwright manages the tricky cookies (xn_api_token etc).
         
-        body = await resp.body()
+        # Strategy:
+        # 1. Check HEAD/GET with Playwright to validate URL and check content-type.
+        # 2. If valid and not HTML, download using httpx (passing cookies).
         
-        # HTML Check
+        # 1. Initial Probe
+        try:
+            resp = await context.request.get(target_url, timeout=10000) # 10s probe
+        except Exception as e:
+            print(f"  [Probe Fail] {e}")
+            return None
+
+        if resp.status != 200:
+            print(f"  [Error] Status {resp.status} for {target_url}")
+            return None
+        
         ctype = resp.headers.get("content-type", "").lower()
-        is_html = "text/html" in ctype or (len(body) < 2000 and b"<html" in body[:500].lower())
+        clength = int(resp.headers.get("content-length", 0))
+        
+        # HTML Check (Viewer Page)
+        # If small and HTML, it's likely a redirect/viewer
+        is_html = "text/html" in ctype or (clength < 5000 and clength > 0)
         
         if is_html:
-            print(f"  [Resolve] HTML 뷰어 감지. 링크 추출 시도: {target_url}")
-            link = await _resolve_generic_download_url(context, target_url)
-            if link:
-                print(f"  [Resolve] 링크 발견: {link}")
-                resp = await context.request.get(link)
-                if resp.status == 200: body = await resp.body()
-                else: return None
-            else:
-                return None
-                
-        # Save
+            # Body check to be sure
+            body_sample = await resp.body()
+            if b"<html" in body_sample[:500].lower() or "text/html" in ctype:
+                print(f"  [Resolve] HTML 뷰어 감지. 링크 추출 시도: {target_url}")
+                link = await _resolve_generic_download_url(context, target_url)
+                if link:
+                    print(f"  [Resolve] 링크 발견: {link}")
+                    # Update target to resolved link
+                    target_url = link
+                    # Re-probe resolved link
+                    resp = await context.request.get(target_url, timeout=10000)
+                    if resp.status != 200: return None
+                else:
+                    return None
+
+        # 2. Actual Download (Streamed)
+        # Prepare destination
         dest = course_dir / file_name
-        # 이름 중복 처리
         if dest.exists():
             stem = dest.stem
             ext = dest.suffix
             dest = course_dir / f"{stem}_new{ext}"
-            
-        with open(dest, "wb") as f:
-            f.write(body)
+
+        print(f"  [다운로드 시작] {file_name} (URL: {target_url[:60]}...)")
+        
+        # Get Cookies from Playwright
+        cookies = await context.cookies()
+        cookie_dict = {c['name']: c['value'] for c in cookies}
+        
+        # Use httpx for streaming
+        async with httpx.AsyncClient(cookies=cookie_dict, verify=False, follow_redirects=True, timeout=600.0) as client:
+            async with client.stream('GET', target_url) as response:
+                if response.status_code != 200:
+                    print(f"  [Download Fail] Status {response.status_code}")
+                    return None
+                
+                with open(dest, "wb") as f:
+                    downloaded = 0
+                    async for chunk in response.aiter_bytes(chunk_size=8192):
+                        f.write(chunk)
+                        downloaded += len(chunk)
+                        # Optional: Print progress for large items
+                        if downloaded > 10 * 1024 * 1024 and downloaded % (50 * 1024 * 1024) < 9000:
+                            print(f"    ... {downloaded / 1024 / 1024:.1f} MB 다운로드 중")
+
         print(f"  [다운로드 완료] {dest.name}")
         return str(dest)
+
     except Exception as e:
         print(f"  [다운로드 에러] {e}")
         return None

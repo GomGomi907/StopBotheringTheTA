@@ -47,7 +47,10 @@ temp/
 .vscode/
 .idea/
 
+
 # Local configuration
 boards.dankook.json
 cookies_*.json
 summary.md
+report.md
+report_images/

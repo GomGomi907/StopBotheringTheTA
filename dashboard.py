@@ -34,18 +34,48 @@ st.set_page_config(
 )
 
 # --- Session State & Init ---
+# 학기 설정 파일 경로
+SEMESTER_CONFIG_PATH = Path("data/current_semester.txt")
+
+def _load_saved_semester() -> str:
+    """저장된 학기 로드 (파일 없으면 기본값)"""
+    if SEMESTER_CONFIG_PATH.exists():
+        try:
+            return SEMESTER_CONFIG_PATH.read_text(encoding="utf-8").strip()
+        except:
+            pass
+    return Settings.from_env().current_semester
+
+def _save_semester(semester: str):
+    """학기 설정 저장"""
+    try:
+        SEMESTER_CONFIG_PATH.parent.mkdir(parents=True, exist_ok=True)
+        SEMESTER_CONFIG_PATH.write_text(semester, encoding="utf-8")
+    except:
+        pass
+
 if "structured_data" not in st.session_state:
     st.session_state["structured_data"] = []
 if "last_updated" not in st.session_state:
     st.session_state["last_updated"] = None
+if "current_semester" not in st.session_state:
+    # 저장된 학기 로드 (또는 기본값)
+    st.session_state["current_semester"] = _load_saved_semester()
 
 # Initialize State Manager
 state_manager = StateManager()
 
 # --- Helpers ---
+def get_current_settings() -> Settings:
+    """현재 학기 설정을 반영한 Settings 반환"""
+    base_settings = Settings.from_env()
+    return base_settings.with_semester(st.session_state["current_semester"])
+
 def load_db():
-    """Load structured DB"""
-    db_path = Path("data/structured_db.json")
+    """Load structured DB (학기별 경로)"""
+    settings = get_current_settings()
+    db_path = settings.structured_db_path
+    
     if db_path.exists():
         try:
             with open(db_path, "r", encoding="utf-8") as f:
@@ -64,9 +94,6 @@ def load_db():
                 if oid:
                     clean_map[oid] = item
                 else:
-                    # Items without original_id? Use title+date as key or keep unique
-                    # ideally all should have original_id.
-                    # Generate a temp key to avoid dropping
                     import uuid
                     clean_map[str(uuid.uuid4())] = item
             
@@ -77,13 +104,21 @@ def load_db():
         except Exception as e:
              logger.error(f"Error loading structured_db.json: {e}")
              st.session_state["structured_data"] = []
+    else:
+        st.session_state["structured_data"] = []
 
 def run_crawler_full(download_files: bool = False):
     """Run Robust Crawler"""
     with st.spinner("🚀 데이터 수집 중... (모든 데이터를 긁어옵니다)"):
         try:
-            settings = Settings.from_env()
-            writer = RecordWriter(base_path=settings.raw_records_dir)
+            settings = get_current_settings()
+            # 학기별 디렉토리 생성
+            settings.raw_records_dir.mkdir(parents=True, exist_ok=True)
+            
+            writer = RecordWriter(
+                base_path=settings.raw_records_dir,
+                semester=settings.current_semester
+            )
             crawler = CanvasCrawler(settings=settings, writer=writer, download_files=download_files)
             courses = crawler.crawl()
             
@@ -120,27 +155,41 @@ def run_crawler_full(download_files: bool = False):
             
             st.success("데이터 수집 완료!")
         except Exception as e:
-            st.error(f"크롤링 실패: {e}")
+            # AuthenticationError 감지
+            from src.domains.canvas import AuthenticationError
+            if isinstance(e, AuthenticationError) or "401" in str(e) or "403" in str(e):
+                st.error("🔐 **인증 오류**: 로그인이 만료되었습니다.")
+                st.warning("👉 왼쪽 사이드바에서 **로그아웃** 후 다시 **로그인**해주세요.")
+                # 쿠키 삭제 제안
+                if st.button("🔄 쿠키 삭제 및 재로그인"):
+                    try:
+                        Path("data/cookies_canvas.json").unlink()
+                        st.session_state["is_logged_in"] = False
+                        st.rerun()
+                    except:
+                        pass
+            else:
+                st.error(f"크롤링 실패: {e}")
 
 def run_etl_pipeline():
-    """Run AI ETL Normalization"""
-    # Dynamic Progress UI
+    """Run Rule-based ETL (Fast, No LLM)"""
     status_container = st.empty()
     progress_bar = st.empty()
     
-    status_container.info("🧠 AI 정제 엔진 가동 중... (데이터 로드)")
+    status_container.info("⚡ 데이터 정제 중... (Rule-based)")
     
-    def _on_progress(course_name, idx, total):
-        pct = idx / total
-        status_container.markdown(f"### 🧠 분석 중: **{course_name}** ({idx}/{total})")
+    def _on_progress(processed, total):
+        pct = processed / total
+        status_container.markdown(f"### ⚡ 처리 중: **{processed}/{total}**")
         progress_bar.progress(pct)
 
     try:
-        structurer = DataStructurer()
-        # Pass callback to visualization
-        data = structurer.run_normalization(progress_callback=_on_progress)
+        from src.etl.simple_structurer import SimpleStructurer
+        current_semester = st.session_state.get("current_semester")
+        structurer = SimpleStructurer(semester=current_semester)
+        data = structurer.run(progress_callback=_on_progress)
         
-        status_container.success("✨ 데이터 정제 및 지식베이스 구축 완료!")
+        status_container.success(f"✨ 데이터 정제 완료! ({len(data)}개 항목)")
         progress_bar.empty()
         
         st.session_state["structured_data"] = data
@@ -186,6 +235,89 @@ def main():
                 except: pass
                 st.rerun()
 
+        st.divider()
+        
+        # [학기 선택 UI]
+        st.subheader("📅 학기 설정")
+        
+        # 학기 옵션 생성 (미래 학기 제외, 내림차순)
+        from datetime import datetime as dt
+        now = dt.now()
+        current_year = now.year
+        current_month = now.month
+        
+        # 현재 시점까지의 학기만 포함
+        def get_semester_order(sem: str) -> int:
+            """학기 정렬을 위한 숫자 반환 (내림차순용)"""
+            parts = sem.split("-")
+            year = int(parts[0])
+            period = parts[1] if len(parts) > 1 else "1"
+            period_order = {"1": 1, "summer": 2, "2": 3, "winter": 4}
+            return year * 10 + period_order.get(period, 0)
+        
+        def is_past_or_current_semester(sem: str) -> bool:
+            """현재 또는 과거 학기인지 확인"""
+            parts = sem.split("-")
+            year = int(parts[0])
+            period = parts[1] if len(parts) > 1 else "1"
+            
+            if year < current_year:
+                return True
+            elif year == current_year:
+                # 현재 월 기준 판단
+                if period == "1" and current_month >= 3:  # 1학기: 3-6월
+                    return True
+                elif period == "summer" and current_month >= 7:  # 여름: 7-8월
+                    return True
+                elif period == "2" and current_month >= 9:  # 2학기: 9-12월
+                    return True
+                elif period == "winter" and current_month >= 1:  # 겨울: 1-2월 (작년 winter도 해당)
+                    return True
+            return False
+        
+        semester_options = []
+        for y in range(current_year - 3, current_year + 1):  # 과거 3년 ~ 현재
+            for period in ["1", "summer", "2", "winter"]:
+                sem = f"{y}-{period}"
+                if is_past_or_current_semester(sem):
+                    semester_options.append(sem)
+        
+        # 내림차순 정렬 (최신 학기가 위에)
+        semester_options.sort(key=get_semester_order, reverse=True)
+        
+        # 현재 학기 인덱스 찾기
+        current_sem = st.session_state["current_semester"]
+        default_idx = semester_options.index(current_sem) if current_sem in semester_options else 0
+        
+        selected_semester = st.selectbox(
+            "현재 학기",
+            options=semester_options,
+            index=default_idx,
+            key="semester_select"
+        )
+        
+        # 학기 변경 감지 및 데이터 유무 체크
+        if selected_semester != st.session_state["current_semester"]:
+            st.session_state["current_semester"] = selected_semester
+            st.session_state["structured_data"] = []  # 데이터 초기화
+            _save_semester(selected_semester)  # 파일에 저장 (새로고침 시에도 유지)
+            st.rerun()
+        
+        # 해당 학기 데이터 유무 확인
+        settings = get_current_settings()
+        db_exists = settings.structured_db_path.exists()
+        raw_exists = (settings.raw_records_dir / "records.jsonl").exists()
+        
+        if db_exists:
+            st.success(f"✅ 데이터 있음")
+            st.caption(f"경로: `{settings.semester_dir}`")
+        elif raw_exists:
+            st.warning("⚠️ Raw 데이터만 있음 (ETL 필요)")
+            st.caption("'2. AI ETL' 버튼을 눌러 정제하세요.")
+        else:
+            st.error("❌ 데이터 없음")
+            st.caption("'1. Crawl Data' 버튼을 눌러 수집하세요.")
+        
         st.divider()
         dl_files = st.checkbox("Download Files (Slow)", value=False)
         if st.button("1. Crawl Data", type="primary"):
@@ -242,7 +374,9 @@ def main():
     """, unsafe_allow_html=True)
 
     # Tabs as Navigation
-    tab_home, tab_timeline, tab_chat, tab_debug = st.tabs(["🏠 Home", "📅 Timeline", "🤖 AI Chat", "🐞 Debug"])
+    tab_home, tab_timeline, tab_chat, tab_grad, tab_debug = st.tabs([
+        "🏠 Home", "📅 Timeline", "🤖 AI Chat", "🎓 졸업요건", "🐞 Debug"
+    ])
     
     # JS Enforcer for Fixed Tabs (The "Absolute" approach)
     import streamlit.components.v1 as components
@@ -293,16 +427,22 @@ def main():
         if not data:
             st.info("데이터가 없습니다. 사이드바에서 수집/정제를 실행해주세요.")
         else:
-            render_home_view(data, state_manager)
+            current_semester = st.session_state.get("current_semester")
+            render_home_view(data, state_manager, semester=current_semester)
             
     with tab_timeline:
         if not data:
             st.info("데이터가 없습니다. 사이드바에서 수집/정제를 실행해주세요.")
         else:
-            render_timeline_view(data, state_manager)
+            current_semester = st.session_state.get("current_semester")
+            render_timeline_view(data, state_manager, semester=current_semester)
             
     with tab_chat:
         render_chat_view(data)
+    
+    with tab_grad:
+        from src.ui.views.graduation import render_graduation_view
+        render_graduation_view()
         
     with tab_debug:
         from src.ui.views.debug import render_debug_view
